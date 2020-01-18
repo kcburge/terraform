@@ -1,7 +1,9 @@
 package terraform
 
 import (
+	"errors"
 	"log"
+	"os"
 
 	"github.com/hashicorp/terraform/dag"
 )
@@ -50,9 +52,24 @@ type TargetsTransformer struct {
 	// Set to true when we're in a `terraform destroy` or a
 	// `terraform plan -destroy`
 	Destroy bool
+
+	DependenciesMode DependenciesModeType
 }
 
 func (t *TargetsTransformer) Transform(g *Graph) error {
+	dms := os.Getenv("TF_DEPENDENCIES_MODE")
+
+	if len(dms) == 0 {
+		t.DependenciesMode = DependenciesModeTypeInclude
+	} else {
+		dm, found := DependenciesModeTypeMap[dms]
+		if !found {
+			return errors.New("don't know how to fail from terraform")
+		}
+
+		t.DependenciesMode = dm
+	}
+
 	if len(t.Targets) > 0 && len(t.ParsedTargets) == 0 {
 		addrs, err := t.parseTargetAddresses()
 		if err != nil {
@@ -133,7 +150,25 @@ func (t *TargetsTransformer) selectTargetedNodes(
 			}
 
 			for _, d := range deps.List() {
-				targetedNodes.Add(d)
+				switch t.DependenciesMode {
+
+				case DependenciesModeTypeInclude:
+					targetedNodes.Add(d)
+
+				case DependenciesModeTypeExclude:
+					// only exclude implicit resources
+					_, ok := d.(GraphNodeResource)
+					if ok {
+						if t.nodeIsTarget(d, addrs) {
+							targetedNodes.Add(d)
+						}
+					} else {
+						// always include non-resources
+						targetedNodes.Add(d)
+					}
+				case DependenciesModeTypeFail:
+					return nil, errors.New("would include dependency")
+				}
 			}
 		}
 	}
