@@ -11,7 +11,6 @@ import (
 // StateListCommand is a Command implementation that lists the resources
 // within a state file.
 type StateListCommand struct {
-	Meta
 	StateMeta
 }
 
@@ -22,25 +21,16 @@ func (c *StateListCommand) Run(args []string) int {
 	}
 
 	cmdFlags := c.Meta.flagSet("state list")
-	cmdFlags.StringVar(&c.Meta.statePath, "state", DefaultStateFilename, "path")
+	cmdFlags.StringVar(&c.statePath, "state", DefaultStateFilename, "path")
 	lookupId := cmdFlags.String("id", "", "Restrict output to paths with a resource having the specified ID.")
 	if err := cmdFlags.Parse(args); err != nil {
 		return cli.RunResultHelp
 	}
 	args = cmdFlags.Args()
 
-	// Load the backend
-	b, err := c.Backend(nil)
+	state, err := c.State()
 	if err != nil {
-		c.Ui.Error(fmt.Sprintf("Failed to load backend: %s", err))
-		return 1
-	}
-
-	env := c.Workspace()
-	// Get the state
-	state, err := b.State(env)
-	if err != nil {
-		c.Ui.Error(fmt.Sprintf("Failed to load state: %s", err))
+		c.Ui.Error(fmt.Sprintf(errStateLoadingState, err))
 		return 1
 	}
 

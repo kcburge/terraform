@@ -301,7 +301,9 @@ func initCommands(config *Config, services *disco.Disco) {
 
 		"state list": func() (cli.Command, error) {
 			return &command.StateListCommand{
-				Meta: meta,
+				StateMeta: command.StateMeta{
+					Meta: meta,
+				},
 			}, nil
 		},
 
@@ -335,7 +337,9 @@ func initCommands(config *Config, services *disco.Disco) {
 
 		"state show": func() (cli.Command, error) {
 			return &command.StateShowCommand{
-				Meta: meta,
+				StateMeta: command.StateMeta{
+					Meta: meta,
+				},
 			}, nil
 		},
 	}

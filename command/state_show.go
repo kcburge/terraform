@@ -12,7 +12,6 @@ import (
 
 // StateShowCommand is a Command implementation that shows a single resource.
 type StateShowCommand struct {
-	Meta
 	StateMeta
 }
 
@@ -23,26 +22,18 @@ func (c *StateShowCommand) Run(args []string) int {
 	}
 
 	cmdFlags := c.Meta.flagSet("state show")
-	cmdFlags.StringVar(&c.Meta.statePath, "state", DefaultStateFilename, "path")
+	cmdFlags.StringVar(&c.statePath, "state", DefaultStateFilename, "path")
 	if err := cmdFlags.Parse(args); err != nil {
 		return cli.RunResultHelp
 	}
 	args = cmdFlags.Args()
 
-	// Load the backend
-	b, err := c.Backend(nil)
+	state, err := c.State()
 	if err != nil {
-		c.Ui.Error(fmt.Sprintf("Failed to load backend: %s", err))
+		c.Ui.Error(fmt.Sprintf(errStateLoadingState, err))
 		return 1
 	}
 
-	// Get the state
-	env := c.Workspace()
-	state, err := b.State(env)
-	if err != nil {
-		c.Ui.Error(fmt.Sprintf("Failed to load state: %s", err))
-		return 1
-	}
 	if err := state.RefreshState(); err != nil {
 		c.Ui.Error(fmt.Sprintf("Failed to load state: %s", err))
 		return 1
