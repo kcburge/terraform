@@ -221,7 +221,6 @@ func initCommands(config *Config, services *disco.Disco) {
 				Revision:          GitCommit,
 				Version:           Version,
 				VersionPrerelease: VersionPrerelease,
-				CheckFunc:         commandVersionCheck,
 			}, nil
 		},
 
