@@ -49,6 +49,8 @@ func (c *VersionCommand) Run(args []string) int {
 		}
 	}
 
+	fmt.Fprintf(&versionString, " (Nice v0.1.0)")
+
 	c.Ui.Output(versionString.String())
 
 	// We'll also attempt to print out the selected plugin versions. We can
