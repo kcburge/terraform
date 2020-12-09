@@ -1,0 +1,8 @@
+#!/bin/bash
+
+docker run \
+       --rm \
+       -v "$(pwd):/usr/src/myapp" \
+       -w /usr/src/myapp \
+       golang:1.15.6 \
+       go build -o terraform-0.11.14 -ldflags="-s -w" -v
