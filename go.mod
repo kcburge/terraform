@@ -1,5 +1,7 @@
 module github.com/hashicorp/terraform
 
+go 1.15
+
 require (
 	cloud.google.com/go v0.15.0
 	github.com/Azure/azure-sdk-for-go v10.3.0-beta+incompatible
